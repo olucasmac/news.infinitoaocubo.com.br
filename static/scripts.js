@@ -1,4 +1,4 @@
-// Inicializa IndexedDB
+// Inicializa IndexedDB para cache de imagens
 let db;
 const request = indexedDB.open('ImageCache', 1);
 request.onupgradeneeded = function(event) {
@@ -12,6 +12,7 @@ request.onerror = function(event) {
     console.error('IndexedDB error:', event.target.errorCode);
 };
 
+// Salva imagem no cache IndexedDB
 function saveImageToCache(url, data) {
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(['images'], 'readwrite');
@@ -26,6 +27,7 @@ function saveImageToCache(url, data) {
     });
 }
 
+// Recupera imagem do cache IndexedDB
 function getImageFromCache(url) {
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(['images'], 'readonly');
@@ -40,6 +42,7 @@ function getImageFromCache(url) {
     });
 }
 
+// Busca imagem e a salva no cache
 async function fetchAndCacheImage(url) {
     const cachedImage = await getImageFromCache(url);
     if (cachedImage) {
@@ -64,6 +67,7 @@ async function fetchAndCacheImage(url) {
     }
 }
 
+// Evento disparado ao carregar o DOM
 document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     const showButtons = urlParams.get('buttons') === 'true';
@@ -88,6 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => console.error('Error fetching the feed:', error));
 
+    // Renderiza os filtros de feeds
     function renderFilters(data) {
         const filtersContainer = document.getElementById('filters');
         const allFeeds = Array.from(new Set(data.map(item => item.channel_title)));
@@ -118,12 +123,14 @@ document.addEventListener('DOMContentLoaded', function() {
         updateActiveFilter(allButton);
     }
 
+    // Atualiza o filtro ativo
     function updateActiveFilter(activeButton) {
         const buttons = document.querySelectorAll('.filter-btn');
         buttons.forEach(button => button.classList.remove('active'));
         activeButton.classList.add('active');
     }
 
+    // Renderiza os itens do feed
     function renderFeedItems(data) {
         const feedContainer = document.getElementById('feed');
         feedContainer.innerHTML = '';
@@ -147,10 +154,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 feedItem.appendChild(imgElement);
             }
 
-            if (item.categories && item.categories.length > 0) {
+            // Corrige a manipulação das categorias
+            const categories = item.categories ? item.categories.split(',') : [];
+            if (categories.length > 0) {
                 const categoriesContainer = document.createElement('div');
                 categoriesContainer.className = 'categories';
-                item.categories.forEach((category, index) => {
+                categories.forEach((category, index) => {
                     const categoryTag = document.createElement('div');
                     categoryTag.className = 'category-tag';
                     categoryTag.textContent = category;
@@ -230,6 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Alterna entre modos de visualização
     const toggleViewBtn = document.getElementById('toggleViewBtn');
     toggleViewBtn.addEventListener('click', () => {
         document.body.classList.toggle('list-view');
@@ -242,11 +252,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Botão de voltar ao topo
     const backToTopBtn = document.getElementById('backToTopBtn');
     backToTopBtn.addEventListener('click', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
+    // Mostra/esconde o botão de voltar ao topo com base no scroll
     window.addEventListener('scroll', () => {
         if (window.scrollY > 200) {
             backToTopBtn.classList.add('show');
@@ -255,6 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Define o ícone de alternância de visualização
     function setToggleIcon(view) {
         const toggleIcon = document.getElementById('toggleIcon');
         if (view === 'list') {
@@ -274,11 +287,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Retorna uma cor para a categoria
 function getCategoryColor(index) {
     const colors = ['#007bb5', '#f39c12', '#e74c3c', '#2ecc71', '#9b59b6'];
     return colors[index % colors.length];
 }
 
+// Formata a data para o padrão brasileiro
 function formatDateToBrazil(pubDate) {
     const date = new Date(pubDate);
     const day = String(date.getDate()).padStart(2, '0');
@@ -289,14 +304,17 @@ function formatDateToBrazil(pubDate) {
     return `${day}/${month}/${year} ${hours}:${minutes}`;
 }
 
+// Mostra o overlay de carregamento
 function showLoading() {
     document.getElementById('loadingOverlay').classList.add('show');
 }
 
+// Esconde o overlay de carregamento
 function hideLoading() {
     document.getElementById('loadingOverlay').classList.remove('show');
 }
 
+// Baixa o card como imagem e copia a URL
 async function downloadCardAsImageAndCopyURL(card, button, url, title) {
     const buttons = card.querySelector('.button-container');
     buttons.style.display = 'none';
@@ -318,31 +336,7 @@ async function downloadCardAsImageAndCopyURL(card, button, url, title) {
     }
 }
 
-async function copyImageAndURLToClipboard(card, button, url, title) {
-    const buttons = card.querySelector('.button-container');
-    buttons.style.display = 'none';
-
-    try {
-        const canvas = await html2canvas(card, { useCORS: true });
-
-        const blob = await new Promise(resolve => canvas.toBlob(resolve));
-        const clipboardItems = [
-            new ClipboardItem({
-                [blob.type]: blob,
-                'text/plain': new Blob([`${title}: ${url}`], { type: 'text/plain' })
-            })
-        ];
-
-        await navigator.clipboard.write(clipboardItems);
-        alert('Imagem e URL copiadas para a área de transferência!');
-    } catch (err) {
-        console.error('Erro ao copiar imagem e URL: ', err);
-    } finally {
-        buttons.style.display = 'flex';
-    }
-}
-
-
+// Copia a imagem e a URL para a área de transferência
 async function copyImageAndURLToClipboard(card, button, url, title) {
     const buttons = card.querySelector('.button-container');
     buttons.style.display = 'none';

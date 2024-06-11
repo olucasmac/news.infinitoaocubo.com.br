@@ -3,3 +3,6 @@ flask-caching
 redis
 apscheduler
 requests
+flask_sqlalchemy
+psycopg2-binary
+flask-migrate

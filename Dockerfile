@@ -8,7 +8,7 @@ WORKDIR /app
 COPY requirements.txt requirements.txt
 
 # Instala as dependências
-RUN pip install -r requirements.txt
+RUN apt-get update && apt-get install -y gcc libpq-dev && pip install -r requirements.txt
 
 # Copia o código da aplicação para o contêiner
 COPY . .
