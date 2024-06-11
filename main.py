@@ -7,7 +7,7 @@ import requests
 from xml.etree import ElementTree as ET
 from io import BytesIO
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import atexit
 
 app = Flask(__name__)
@@ -26,11 +26,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# URL base do feed estático
-PERSONAL_FEED_URL = 'https://news.infinitoaocubo.com.br/personal_feed/meu_feed.xml'
 GENERIC_IMAGE_URL = 'https://placehold.co/300x169?font=roboto&text=Sem+Imagem+:('  # Exemplo de imagem genérica
-
-
 class FeedItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
@@ -61,10 +57,22 @@ def extract_image_from_description(description):
     return match.group(1) if match else ''
 
 def parse_pub_date(pub_date):
-    try:
-        return datetime.strptime(pub_date, '%a, %d %b %Y %H:%M:%S %z')
-    except ValueError:
-        return datetime(1970, 1, 1, tzinfo=timezone.utc)
+    formats = [
+        '%a, %d %b %Y %H:%M:%S %z',  # Formato comum usado em RSS
+        '%Y-%m-%dT%H:%M:%S%z',        # Formato ISO 8601
+        '%a, %d %b %Y %H:%M:%S %Z',   # Sem fuso horário
+        '%d %b %Y %H:%M:%S %z',       # Sem dia da semana
+        '%d/%m/%Y %H:%M:%S'           # Formato brasileiro comum
+    ]
+    
+    for fmt in formats:
+        try:
+            return datetime.strptime(pub_date, fmt)
+        except ValueError:
+            continue
+    
+    # Retornar uma data padrão em caso de falha
+    return datetime(1970, 1, 1, tzinfo=timezone.utc)
 
 @app.route('/')
 def index():
@@ -84,19 +92,21 @@ def fetch_and_cache_feeds():
         'https://rss.tecmundo.com.br/feed',
         'https://canaltech.com.br/rss/',
         'https://pox.globo.com/rss/techtudo/',
-        # 'https://www.legiaodosherois.com.br/rss',  # Novo feed adicionado
-        # 'https://feeds.jovemnerd.com.br/rss/feed',
-        PERSONAL_FEED_URL  # Adiciona o feed RSS local
+        'https://www.legiaodosherois.com.br/rss',
+        'https://feeds.jovemnerd.com.br/rss/feed',
+        request.url_root + 'personal_feed/meu_feed.xml'  # Usando a rota diretamente
     ]
 
     feed_items = []
+    cutoff_time = datetime.now(timezone.utc) - timedelta(hours=72)  # Define o limite de 72 horas
+
     for feed_url in feed_urls:
         response = requests.get(feed_url)
         if response.status_code != 200:
             continue
         xml = ET.fromstring(response.content)
         channel_title = xml.find('channel/title').text
-        is_personal_feed = feed_url == PERSONAL_FEED_URL
+        is_personal_feed = feed_url == request.url_root + 'personal_feed/meu_feed.xml'
         items = xml.findall('channel/item')
 
         for item in items:
@@ -106,7 +116,11 @@ def fetch_and_cache_feeds():
 
             title = item.find('title').text
             link = item.find('link').text
-            pub_date = item.find('pubDate').text
+            pub_date_str = item.find('pubDate').text
+            pub_date = parse_pub_date(pub_date_str)
+
+            if pub_date < cutoff_time:
+                continue  # Ignora itens que são mais antigos do que 72 horas
 
             enclosure = item.find('enclosure')
             image_url = enclosure.attrib['url'] if enclosure is not None else ''
@@ -122,7 +136,7 @@ def fetch_and_cache_feeds():
             feed_item = FeedItem(
                 title=title,
                 link=link,
-                pub_date=parse_pub_date(pub_date),
+                pub_date=pub_date,
                 image_url=image_url,
                 channel_title=channel_title,
                 is_personal_feed=is_personal_feed,
