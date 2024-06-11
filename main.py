@@ -153,7 +153,12 @@ def serve_feed():
 
 # Configuração do APScheduler
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=fetch_and_cache_feeds, trigger="interval", minutes=10)
+
+def scheduled_task():
+    with app.app_context():
+        fetch_and_cache_feeds()
+
+scheduler.add_job(func=scheduled_task, trigger="interval", minutes=10)
 scheduler.start()
 
 # Para evitar problemas com o agendador ao encerrar o aplicativo
