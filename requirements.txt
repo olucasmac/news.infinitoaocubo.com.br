@@ -1,3 +1,5 @@
-flask
+Flask
+flask-caching
+redis
+apscheduler
 requests
-functions-framework

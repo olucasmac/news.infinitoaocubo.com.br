@@ -1,9 +1,31 @@
 version: '3.8'
 
 services:
-  rss-proxy-app:
+  web:
     build: .
     ports:
-      - "8080:8080"
+      - "5000:5000"
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - db
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  db:
+    image: postgres:13-alpine
     environment:
-      - FLASK_ENV=development
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: feeds_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

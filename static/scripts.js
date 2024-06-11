@@ -341,3 +341,28 @@ async function copyImageAndURLToClipboard(card, button, url, title) {
         buttons.style.display = 'flex';
     }
 }
+
+
+async function copyImageAndURLToClipboard(card, button, url, title) {
+    const buttons = card.querySelector('.button-container');
+    buttons.style.display = 'none';
+
+    try {
+        const canvas = await html2canvas(card, { useCORS: true });
+
+        const blob = await new Promise(resolve => canvas.toBlob(resolve));
+        const clipboardItems = [
+            new ClipboardItem({
+                [blob.type]: blob,
+                'text/plain': new Blob([`${title}: ${url}`], { type: 'text/plain' })
+            })
+        ];
+
+        await navigator.clipboard.write(clipboardItems);
+        alert('Imagem e URL copiadas para a área de transferência!');
+    } catch (err) {
+        console.error('Erro ao copiar imagem e URL: ', err);
+    } finally {
+        buttons.style.display = 'flex';
+    }
+}
