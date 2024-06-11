@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, send_file, send_from_directory, url_for
+from flask import Flask, render_template, jsonify, request, send_file, send_from_directory
 from flask_caching import Cache
 from apscheduler.schedulers.background import BackgroundScheduler
 import requests
@@ -48,9 +48,9 @@ def fetch_and_cache_feeds():
     feed_urls = [
         'https://www.gamevicio.com/rss/noticias.xml',
         'https://br.ign.com/feed.xml',
-        'https://pox.globo.com/rss/techtudo/',
         'https://rss.tecmundo.com.br/feed',
         'https://canaltech.com.br/rss/',
+        'https://pox.globo.com/rss/techtudo/',  # Novo feed adicionado
         PERSONAL_FEED_URL  # Adiciona o feed RSS local
     ]
 
