@@ -28,6 +28,8 @@ migrate = Migrate(app, db)
 
 # URL base do feed estático
 PERSONAL_FEED_URL = 'https://news.infinitoaocubo.com.br/personal_feed/meu_feed.xml'
+GENERIC_IMAGE_URL = 'https://via.placeholder.com/300x169?text=No+Image'  # Exemplo de imagem genérica
+
 
 class FeedItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -81,7 +83,9 @@ def fetch_and_cache_feeds():
         'https://br.ign.com/feed.xml',
         'https://rss.tecmundo.com.br/feed',
         'https://canaltech.com.br/rss/',
-        'https://pox.globo.com/rss/techtudo/',  # Novo feed adicionado
+        'https://pox.globo.com/rss/techtudo/',
+        'https://www.legiaodosherois.com.br/rss',  # Novo feed adicionado
+        'https://feeds.jovemnerd.com.br/rss/feed',
         PERSONAL_FEED_URL  # Adiciona o feed RSS local
     ]
 
@@ -110,6 +114,8 @@ def fetch_and_cache_feeds():
             if not image_url:
                 description = item.find('description').text
                 image_url = extract_image_from_description(description)
+                if not image_url:
+                    image_url = GENERIC_IMAGE_URL  # Usa a imagem genérica se nenhuma outra imagem for encontrada
 
             categories_text = ','.join([category.text for category in categories])
 
