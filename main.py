@@ -28,7 +28,7 @@ migrate = Migrate(app, db)
 
 # URL base do feed estático
 PERSONAL_FEED_URL = 'https://news.infinitoaocubo.com.br/personal_feed/meu_feed.xml'
-GENERIC_IMAGE_URL = 'https://via.placeholder.com/300x169?text=No+Image'  # Exemplo de imagem genérica
+GENERIC_IMAGE_URL = 'https://placehold.co/300x169?font=roboto&text=Sem+Imagem+:('  # Exemplo de imagem genérica
 
 
 class FeedItem(db.Model):
@@ -84,8 +84,8 @@ def fetch_and_cache_feeds():
         'https://rss.tecmundo.com.br/feed',
         'https://canaltech.com.br/rss/',
         'https://pox.globo.com/rss/techtudo/',
-        'https://www.legiaodosherois.com.br/rss',  # Novo feed adicionado
-        'https://feeds.jovemnerd.com.br/rss/feed',
+        # 'https://www.legiaodosherois.com.br/rss',  # Novo feed adicionado
+        # 'https://feeds.jovemnerd.com.br/rss/feed',
         PERSONAL_FEED_URL  # Adiciona o feed RSS local
     ]
 
