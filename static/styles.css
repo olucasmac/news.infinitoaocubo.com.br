@@ -1,0 +1,301 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #333;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.header {
+    text-align: center;
+    color: #fff;
+    margin-top: 50px;
+    display: flex;
+}
+
+.header h1 {
+    margin: 0;
+}
+
+.slogan {
+    color: #fff;
+    margin: 20px;
+    text-align: center;
+}
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0;
+    justify-content: center;
+}
+
+.filter-btn {
+    padding: 10px 20px;
+    background-color: #007bb5;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.filter-btn.active {
+    background-color: #005f87;
+}
+
+.filter-btn:hover {
+    background-color: #005f87;
+}
+
+.feed {
+    column-count: 3;
+    column-gap: 20px;
+    max-width: 1000px;
+    width: 90%;
+    padding: 20px;
+}
+
+.feed-item {
+    background-color: #fff;
+    border: 1px solid #dbdbdb;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: inline-block;
+    margin: 0 0 20px;
+    width: 100%;
+    break-inside: avoid;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow 0.3s ease;
+    position: relative;
+}
+
+.feed-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.feed-item img {
+    width: 100%;
+    height: auto;
+}
+
+.feed-item h2 {
+    font-size: 18px;
+    margin: 10px 15px;
+    text-align: left;
+}
+
+.feed-item .channel-title {
+    font-size: 14px;
+    margin: 0 15px 10px 15px;
+    text-align: left;
+    color: #555;
+}
+
+.feed-item .channel-title b {
+    font-weight: bold;
+}
+
+.feed-item .pubdate {
+    font-size: 12px;
+    margin: 5px 15px 20px 15px;
+    text-align: left;
+    color: #999;
+}
+
+.feed-item .categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 10px 15px;
+}
+
+.feed-item .category-tag {
+    background-color: #007bb5; /* Cor padrão, pode ser alterada dinamicamente no JS */
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.feed-item .ad-tag {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #e74c3c;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.footer {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 10px;
+    width: 100%;
+    background: #000;
+    color: #fff;
+    font-weight: bold;
+}
+
+.footer.show {
+    display: flex;
+}
+
+.footer .brand img {
+    height: 30px;
+    width: 60px;
+    margin: 10px 20px 5px 0px;
+}
+
+.button-container {
+    display: flex;
+    gap: 10px;
+}
+
+.button-container button {
+    padding: 5px 10px;
+    background-color: #0095f6;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.button-container button:hover {
+    background-color: #007bb5;
+}
+
+@media (max-width: 900px) {
+    .feed {
+        column-count: 2;
+    }
+}
+
+@media (max-width: 600px) {
+    .feed {
+        column-count: 1;
+    }
+
+    .toggle-view-btn {
+        display: none !important; /* Oculta o botão de alternância de visualização em dispositivos móveis */
+    }
+    
+    .back-to-top-btn {
+        display: none; /* Oculta o botão de retornar ao topo em dispositivos móveis */
+    }
+}
+
+.site-footer {
+    width: 97%;
+    text-align: center;
+    color: #fff;
+    padding: 20px;
+    background-color: #222;
+}
+
+.site-footer img {
+    margin-top: 10px;
+    height: 40px;
+    margin-bottom: 25px;
+}
+
+.loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.loading-overlay.show {
+    display: flex;
+}
+
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 4px solid #fff;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.back-to-top-btn,
+.toggle-view-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px;
+    background-color: #007bb5;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.back-to-top-btn {
+    bottom: 80px; /* Ajuste conforme necessário para posicionar acima do botão de alternância de visualização */
+    opacity: 0;
+    visibility: hidden;
+}
+
+.back-to-top-btn:hover,
+.toggle-view-btn:hover {
+    background-color: #005f87;
+}
+
+.back-to-top-btn.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.list-view .feed {
+    column-count: 1;
+}
+
+.list-view .feed-item {
+    display: flex;
+    width: 100%;
+    margin-bottom: 20px;
+    flex-direction: row;
+}
+
+.list-view .feed-item img {
+    width: 30%;
+    height: auto;
+    margin-right: 20px;
+}
+
+.list-view .feed-item .content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 70%; /* Garantir que o conteúdo ocupa o restante do espaço */
+}

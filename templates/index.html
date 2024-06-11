@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="shortcut icon" href="https://infinitoaocubo.com.br/img/i3_logo.png"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinito³ News - Últimas notícias sobre Ciência, Tecnologia e Cultura Pop.</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="header">
+        <img style="margin-right: 10px;" height="40px" src="https://infinitoaocubo.com.br/img/infinito3.png" alt="Infinito ao Cubo">
+        <h1>News</h1>
+    </div>
+    <div class="slogan"><small>Apenas um agregador de notícias sobre Ciência, Tecnologia e Cultura Pop.</small></div>
+    <div id="filters" class="filters"></div>
+    <div id="feed" class="feed"></div>
+    <div class="site-footer">
+        <p>Infinito³ News é apenas um agregador de notícias sobre Ciência, Tecnologia e Cultura Pop.</p>
+        <img src="https://infinitoaocubo.com.br/img/infinito3.png" alt="Infinito ao Cubo">
+    </div>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+    <button id="backToTopBtn" class="back-to-top-btn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L12 22" stroke="white" stroke-width="2"/>
+            <path d="M5 9L12 2L19 9" stroke="white" stroke-width="2"/>
+        </svg>
+    </button>
+    <button id="toggleViewBtn" class="toggle-view-btn">
+        <svg id="toggleIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="5" width="18" height="2" fill="#FFFFFF"/>
+            <rect x="3" y="11" width="18" height="2" fill="#FFFFFF"/>
+            <rect x="3" y="17" width="18" height="2" fill="#FFFFFF"/>
+        </svg>
+    </button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+</body>
+</html>
