@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, send_file, send_from_directory
+from flask import Flask, render_template, jsonify, request, send_file, send_from_directory, url_for
 from flask_caching import Cache
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -26,6 +26,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+# URL base do aplicativo
+BASE_URL = 'https://news.infinitoaocubo.com.br/'  # Substitua pelo URL apropriado do seu aplicativo
 GENERIC_IMAGE_URL = 'https://placehold.co/300x169?font=roboto&text=Sem+Imagem+:('  # Exemplo de imagem genérica
 class FeedItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -94,7 +96,7 @@ def fetch_and_cache_feeds():
         'https://pox.globo.com/rss/techtudo/',
         'https://www.legiaodosherois.com.br/rss',
         'https://feeds.jovemnerd.com.br/rss/feed',
-        request.url_root + 'personal_feed/meu_feed.xml'  # Usando a rota diretamente
+        BASE_URL + 'personal_feed/meu_feed.xml'  # Usando a URL base do aplicativo
     ]
 
     feed_items = []
@@ -106,7 +108,7 @@ def fetch_and_cache_feeds():
             continue
         xml = ET.fromstring(response.content)
         channel_title = xml.find('channel/title').text
-        is_personal_feed = feed_url == request.url_root + 'personal_feed/meu_feed.xml'
+        is_personal_feed = feed_url == BASE_URL + 'personal_feed/meu_feed.xml'
         items = xml.findall('channel/item')
 
         for item in items:
