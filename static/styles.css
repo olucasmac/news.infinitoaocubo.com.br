@@ -1,3 +1,4 @@
+/* Configurações básicas do corpo */
 body {
     font-family: Arial, sans-serif;
     background-color: #333;
@@ -8,10 +9,11 @@ body {
     align-items: center;
 }
 
+/* Estilização do cabeçalho */
 .header {
     text-align: center;
     color: #fff;
-    margin-top: 50px;
+    margin-top: 50px; /* Alterado para 50px */
     display: flex;
 }
 
@@ -19,12 +21,14 @@ body {
     margin: 0;
 }
 
+/* Slogan abaixo do cabeçalho */
 .slogan {
     color: #fff;
     margin: 20px;
     text-align: center;
 }
 
+/* Contêiner de filtros */
 .filters {
     display: flex;
     flex-wrap: wrap;
@@ -33,14 +37,15 @@ body {
     justify-content: center;
 }
 
+/* Botões de filtro */
 .filter-btn {
-    padding: 10px 20px;
+    padding: 10px 15px;
     background-color: #007bb5;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .filter-btn.active {
@@ -51,6 +56,7 @@ body {
     background-color: #005f87;
 }
 
+/* Estilização do contêiner do feed */
 .feed {
     column-count: 3;
     column-gap: 20px;
@@ -59,6 +65,7 @@ body {
     padding: 20px;
 }
 
+/* Estilização dos itens do feed */
 .feed-item {
     background-color: #fff;
     border: 1px solid #dbdbdb;
@@ -108,6 +115,7 @@ body {
     color: #999;
 }
 
+/* Estilização das categorias */
 .feed-item .categories {
     display: flex;
     flex-wrap: wrap;
@@ -124,6 +132,7 @@ body {
     font-weight: bold;
 }
 
+/* Tag de anúncio */
 .feed-item .ad-tag {
     position: absolute;
     top: 10px;
@@ -136,6 +145,7 @@ body {
     font-weight: bold;
 }
 
+/* Estilização do rodapé do item */
 .footer {
     display: none;
     align-items: center;
@@ -157,6 +167,7 @@ body {
     margin: 10px 20px 5px 0px;
 }
 
+/* Contêiner de botões */
 .button-container {
     display: flex;
     gap: 10px;
@@ -176,6 +187,7 @@ body {
     background-color: #007bb5;
 }
 
+/* Estilizações responsivas */
 @media (max-width: 900px) {
     .feed {
         column-count: 2;
@@ -196,6 +208,7 @@ body {
     }
 }
 
+/* Estilização do rodapé do site */
 .site-footer {
     width: 97%;
     text-align: center;
@@ -207,9 +220,10 @@ body {
 .site-footer img {
     margin-top: 10px;
     height: 40px;
-    margin-bottom: 25px;
+    margin-bottom: 25px; /* Alterado para adicionar margem inferior */
 }
 
+/* Overlay de carregamento */
 .loading-overlay {
     display: none;
     position: fixed;
@@ -227,6 +241,7 @@ body {
     display: flex;
 }
 
+/* Estilização do spinner */
 .spinner {
     border: 4px solid rgba(255, 255, 255, 0.3);
     border-radius: 50%;
@@ -241,6 +256,7 @@ body {
     100% { transform: rotate(360deg); }
 }
 
+/* Botão de voltar ao topo e alternância de visualização */
 .back-to-top-btn,
 .toggle-view-btn {
     position: fixed;
@@ -266,16 +282,17 @@ body {
     visibility: hidden;
 }
 
-.back-to-top-btn:hover,
-.toggle-view-btn:hover {
-    background-color: #005f87;
-}
-
 .back-to-top-btn.show {
     opacity: 1;
     visibility: visible;
 }
 
+.back-to-top-btn:hover,
+.toggle-view-btn:hover {
+    background-color: #005f87;
+}
+
+/* Estilização da visualização em lista */
 .list-view .feed {
     column-count: 1;
 }

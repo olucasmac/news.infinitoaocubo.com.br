@@ -1,9 +1,38 @@
 version: '3.8'
 
 services:
-  rss-proxy-app:
+  web:
     build: .
+    container_name: rss-proxy-flask_web
     ports:
-      - "8080:8080"
+      - "5000:5000"
     environment:
-      - FLASK_ENV=development
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CACHE_REDIS_DB=0
+      - DATABASE_URL=postgresql://user:password@db:5432/feeds_db
+      - BASE_URL=http://localhost:5000/
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:13
+    container_name: rss-proxy-flask_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=feeds_db
+
+  redis:
+    image: redis:7.2.5
+    container_name: rss-proxy-flask_redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:

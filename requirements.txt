@@ -1,3 +1,8 @@
-flask
+Flask
+flask-caching
+redis
+apscheduler
 requests
-functions-framework
+flask_sqlalchemy
+psycopg2-binary
+flask-migrate
