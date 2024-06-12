@@ -28,7 +28,8 @@ migrate = Migrate(app, db)
 
 # URL base do aplicativo
 BASE_URL = 'https://news.infinitoaocubo.com.br/'  # Substitua pelo URL apropriado do seu aplicativo
-GENERIC_IMAGE_URL = 'https://placehold.co/300x169?font=roboto&text=Sem+Imagem+:('  # Exemplo de imagem genérica
+GENERIC_IMAGE_URL = 'https://placehold.co/300x169?font=roboto&text=Image+not\nAvailable'  # Exemplo de imagem genérica
+
 class FeedItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
