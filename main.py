@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, send_file, send_from_directory, url_for
+from flask import Flask, render_template, jsonify, request, send_file, send_from_directory
 from flask_caching import Cache
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -8,9 +8,13 @@ from xml.etree import ElementTree as ET
 from io import BytesIO
 import re
 from datetime import datetime, timezone, timedelta
+import os
 import atexit
 
 app = Flask(__name__)
+
+# Definir URL da imagem genérica
+GENERIC_IMAGE_URL = 'https://raw.githubusercontent.com/olucasmac/news.infinitoaocubo.com.br/feat/add-db-and-redis/static/imgs/no-image.png'  # Substitua pelo URL da sua imagem genérica
 
 # Dicionário de mapeamento de nomes de feeds para textos personalizados
 FEED_NAME_MAPPING = {
@@ -25,21 +29,20 @@ FEED_NAME_MAPPING = {
 
 # Configuração do cache
 app.config['CACHE_TYPE'] = 'redis'
-app.config['CACHE_REDIS_HOST'] = 'redis'
-app.config['CACHE_REDIS_PORT'] = 6379
-app.config['CACHE_REDIS_DB'] = 0
-app.config['CACHE_REDIS_URL'] = 'redis://redis:6379/0'
+app.config['CACHE_REDIS_HOST'] = os.environ.get('REDIS_HOST', 'localhost')
+app.config['CACHE_REDIS_PORT'] = os.environ.get('REDIS_PORT', 6379)
+app.config['CACHE_REDIS_DB'] = os.environ.get('CACHE_REDIS_DB', 0)
+app.config['CACHE_REDIS_URL'] = os.environ.get('CACHE_REDIS_URL', f'redis://{app.config["CACHE_REDIS_HOST"]}:{app.config["CACHE_REDIS_PORT"]}/{app.config["CACHE_REDIS_DB"]}')
 cache = Cache(app)
 
 # Configuração do banco de dados
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://user:password@db:5432/feeds_db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://user:password@localhost:5432/feeds_db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 # URL base do aplicativo
-BASE_URL = 'https://news.infinitoaocubo.com.br/'  # Substitua pelo URL apropriado do seu aplicativo
-GENERIC_IMAGE_URL = 'https://raw.githubusercontent.com/olucasmac/news.infinitoaocubo.com.br/1df0cd9a4951e074ca372707cc09a4eb0a35d1c0/static/imgs/no-image.png'  # Exemplo de imagem genérica
+BASE_URL = os.environ.get('BASE_URL', 'http://localhost:5000/')
 
 class FeedItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)

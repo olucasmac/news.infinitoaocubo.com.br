@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: i3-news-postgres
+  labels:
+    app: i3-news
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: i3-news
+      tier: db
+  template:
+    metadata:
+      labels:
+        app: i3-news
+        tier: db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:13
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: feeds_db
+        - name: POSTGRES_USER
+          value: user
+        - name: POSTGRES_PASSWORD
+          value: password
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata  # Adiciona a variável PGDATA
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: i3-news-postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: i3-news-postgres
+  labels:
+    app: i3-news
+spec:
+  ports:
+  - port: 5432
+    targetPort: 5432
+  selector:
+    app: i3-news
+    tier: db

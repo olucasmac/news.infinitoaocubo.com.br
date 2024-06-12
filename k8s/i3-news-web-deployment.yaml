@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: i3-news-web
+  labels:
+    app: i3-news
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: i3-news
+      tier: web
+  template:
+    metadata:
+      labels:
+        app: i3-news
+        tier: web
+    spec:
+      containers:
+      - name: web
+        image: gcr.io/min-b302a/i3-news-v2:1718201278
+        ports:
+        - containerPort: 5000
+        env:
+        - name: REDIS_HOST
+          value: i3-news-redis
+        - name: REDIS_PORT
+          value: "6379"
+        - name: CACHE_REDIS_DB
+          value: "0"
+        - name: DATABASE_URL
+          value: postgresql://user:password@i3-news-postgres:5432/feeds_db
+        - name: BASE_URL
+          value: https://news-v2.infinitoaocubo.com.br/
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: i3-news-web
+  labels:
+    app: i3-news
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 5000
+  selector:
+    app: i3-news
+    tier: web

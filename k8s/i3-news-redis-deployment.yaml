@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: i3-news-redis
+  labels:
+    app: i3-news
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: i3-news
+      tier: redis
+  template:
+    metadata:
+      labels:
+        app: i3-news
+        tier: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:latest
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+        - name: redis-config
+          mountPath: /usr/local/etc/redis/redis.conf
+          subPath: redis.conf
+      volumes:
+      - name: redis-config
+        configMap:
+          name: i3-news-redis-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: i3-news-redis
+  labels:
+    app: i3-news
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    app: i3-news
+    tier: redis
