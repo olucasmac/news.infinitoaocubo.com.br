@@ -12,6 +12,17 @@ import atexit
 
 app = Flask(__name__)
 
+# Dicionário de mapeamento de nomes de feeds para textos personalizados
+FEED_NAME_MAPPING = {
+    'GameVicio - Últimas Notícias': 'GameVicio',
+    'IGN Brasil': 'IGN',
+    'Novidades do TecMundo': 'TecMundo',
+    'Canaltech': 'Canaltech',
+    'techtudo': 'TechTudo',
+    'Legião dos Heróis': 'Legião dos Heróis',
+    'Jovem Nerd': 'Jovem Nerd'
+}
+
 # Configuração do cache
 app.config['CACHE_TYPE'] = 'redis'
 app.config['CACHE_REDIS_HOST'] = 'redis'
@@ -28,7 +39,7 @@ migrate = Migrate(app, db)
 
 # URL base do aplicativo
 BASE_URL = 'https://news.infinitoaocubo.com.br/'  # Substitua pelo URL apropriado do seu aplicativo
-GENERIC_IMAGE_URL = 'https://placehold.co/300x169?font=roboto&text=Image+not\nAvailable'  # Exemplo de imagem genérica
+GENERIC_IMAGE_URL = 'https://raw.githubusercontent.com/olucasmac/news.infinitoaocubo.com.br/1df0cd9a4951e074ca372707cc09a4eb0a35d1c0/static/imgs/no-image.png'  # Exemplo de imagem genérica
 
 class FeedItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)

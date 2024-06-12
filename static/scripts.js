@@ -92,36 +92,46 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => console.error('Error fetching the feed:', error));
 
-    // Renderiza os filtros de feeds
-    function renderFilters(data) {
-        const filtersContainer = document.getElementById('filters');
-        const allFeeds = Array.from(new Set(data.map(item => item.channel_title)));
-        filtersContainer.innerHTML = '';
+// Dicionário de mapeamento de nomes de feeds para textos personalizados
+const feedNameMapping = {
+    'GameVicio - Últimas Notícias': 'GameVicio',
+    'IGN Brasil': 'IGN',
+    'Novidades do TecMundo': 'TecMundo',
+    'Canaltech': 'Canaltech',
+    'techtudo': 'TechTudo',
+    'Legião dos Heróis': 'Legião dos Heróis',
+    'Jovem Nerd': 'Jovem Nerd'
+};
 
-        const allButton = document.createElement('button');
-        allButton.className = 'filter-btn';
-        allButton.textContent = 'Tudo';
-        allButton.addEventListener('click', () => {
-            currentFilter = 'all';
-            updateActiveFilter(allButton);
-            renderFeedItems(feedData);
-        });
-        filtersContainer.appendChild(allButton);
+function renderFilters(data) {
+    const filtersContainer = document.getElementById('filters');
+    const allFeeds = Array.from(new Set(data.map(item => item.channel_title)));
+    filtersContainer.innerHTML = '';
 
-        allFeeds.forEach(feed => {
-            const filterButton = document.createElement('button');
-            filterButton.className = 'filter-btn';
-            filterButton.textContent = feed;
-            filterButton.addEventListener('click', () => {
-                currentFilter = feed;
-                updateActiveFilter(filterButton);
-                renderFeedItems(feedData.filter(item => item.channel_title === feed));
-            });
-            filtersContainer.appendChild(filterButton);
-        });
-
+    const allButton = document.createElement('button');
+    allButton.className = 'filter-btn';
+    allButton.textContent = 'Tudo';
+    allButton.addEventListener('click', () => {
+        currentFilter = 'all';
         updateActiveFilter(allButton);
-    }
+        renderFeedItems(feedData);
+    });
+    filtersContainer.appendChild(allButton);
+
+    allFeeds.forEach(feed => {
+        const filterButton = document.createElement('button');
+        filterButton.className = 'filter-btn';
+        filterButton.textContent = feedNameMapping[feed] || feed;
+        filterButton.addEventListener('click', () => {
+            currentFilter = feed;
+            updateActiveFilter(filterButton);
+            renderFeedItems(feedData.filter(item => item.channel_title === feed));
+        });
+        filtersContainer.appendChild(filterButton);
+    });
+
+    updateActiveFilter(allButton);
+}
 
     // Atualiza o filtro ativo
     function updateActiveFilter(activeButton) {
