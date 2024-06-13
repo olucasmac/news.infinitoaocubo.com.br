@@ -7,7 +7,7 @@
     <title>Infinito³ News - Últimas notícias sobre Ciência, Tecnologia e Cultura Pop.</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-<body>
+<body class="list-view"> <!-- Adicione a classe list-view aqui -->
     <div class="header">
         <img style="margin-right: 10px;" height="40px" src="https://infinitoaocubo.com.br/img/infinito3.png" alt="Infinito ao Cubo">
         <h1>News</h1>
@@ -38,4 +38,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>
 </body>
+
 </html>
