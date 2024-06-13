@@ -14,7 +14,7 @@ import atexit
 app = Flask(__name__)
 
 # Definir URL da imagem genérica
-GENERIC_IMAGE_URL = 'https://raw.githubusercontent.com/olucasmac/news.infinitoaocubo.com.br/feat/add-db-and-redis/static/imgs/no-image.png'  # Substitua pelo URL da sua imagem genérica
+GENERIC_IMAGE_URL = 'https://placehold.co/300x169?text=no\nimage'  # Substitua pelo URL da sua imagem genérica
 
 # Dicionário de mapeamento de nomes de feeds para textos personalizados
 FEED_NAME_MAPPING = {
