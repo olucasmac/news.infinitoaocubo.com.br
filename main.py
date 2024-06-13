@@ -115,7 +115,7 @@ def fetch_and_cache_feeds():
     ]
 
     feed_items = []
-    cutoff_time = datetime.now(timezone.utc) - timedelta(hours=72)  # Define o limite de 72 horas
+    cutoff_time = datetime.now(timezone.utc) - timedelta(hours=48)  # Define o limite de 48 horas
 
     for feed_url in feed_urls:
         response = requests.get(feed_url)
