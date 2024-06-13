@@ -67,10 +67,11 @@ async function fetchAndCacheImage(url) {
     }
 }
 
+// Evento disparado ao carregar o DOM
 document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
-    const isListView = urlParams.get('view') === 'list' || !urlParams.has('view'); // Defina list como padrão se o parâmetro não estiver presente
     const showButtons = urlParams.get('buttons') === 'true';
+    const isListView = urlParams.get('view') === 'list';
 
     let feedData = [];
     let currentFilter = 'all';
@@ -78,8 +79,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (isListView) {
         document.body.classList.add('list-view');
         setToggleIcon('list');
-    } else {
-        setToggleIcon('cards');
     }
 
     console.log("Fetching feed data...");
