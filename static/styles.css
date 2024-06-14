@@ -316,3 +316,45 @@ body {
     justify-content: center;
     width: 70%; /* Garantir que o conteúdo ocupa o restante do espaço */
 }
+
+/* Paginação */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.page-btn {
+    padding: 5px 10px;
+    background-color: #007bb5;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.page-btn.active {
+    background-color: #005f87;
+}
+
+.page-btn:hover:not(.active) {
+    background-color: #005f87;
+}
+
+.arrow {
+    padding: 5px 8px;
+    font-size: 12px;
+    line-height: 0;
+    background-color: transparent;
+    color: white;
+    padding: 5px 10px;
+    /* background-color: #007bb5; */
+    /* color: white; */
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    /* font-size: 14px;*/
+}

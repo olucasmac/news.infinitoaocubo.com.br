@@ -11,7 +11,10 @@ from datetime import datetime, timezone, timedelta
 import os
 import atexit
 
-app = Flask(__name__, static_url_path='/static')
+app = Flask(__name__)
+
+# Definir URL da imagem genérica
+GENERIC_IMAGE_URL = 'https://news.infinitoaocubo.com.br/static/imgs/no-image.png'  # Substitua pelo URL da sua imagem genérica
 
 # Configuração do cache
 app.config['CACHE_TYPE'] = 'redis'
@@ -29,20 +32,6 @@ migrate = Migrate(app, db)
 
 # URL base do aplicativo
 BASE_URL = os.environ.get('BASE_URL', 'http://localhost:5000/')
-
-# Definir URL da imagem genérica
-GENERIC_IMAGE_URL = 'https://raw.githubusercontent.com/olucasmac/news.infinitoaocubo.com.br/feat/add-db-and-redis/static/imgs/no-image.png'  # Substitua pelo URL da sua imagem genérica
-
-# Dicionário de mapeamento de nomes de feeds para textos personalizados
-FEED_NAME_MAPPING = {
-    'GameVicio - Últimas Notícias': 'GameVicio',
-    'IGN Brasil': 'IGN',
-    'Novidades do TecMundo': 'TecMundo',
-    'Canaltech': 'Canaltech',
-    'techtudo': 'TechTudo',
-    'Legião dos Heróis': 'Legião dos Heróis',
-    'Jovem Nerd': 'Jovem Nerd'
-}
 
 class FeedItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -100,9 +89,12 @@ def feed():
     feeds = cache.get('feeds')
     if not feeds:
         feeds = fetch_and_cache_feeds()
-    return jsonify(feeds)
+    if isinstance(feeds, list):
+        return jsonify(feeds)
+    else:
+        return jsonify([]), 500
 
-def fetch_and_cache_feeds():
+def fetch_and_cache_feeds(page=1, per_page=30, offset=0):
     feed_urls = [
         'https://www.gamevicio.com/rss/noticias.xml',
         'https://br.ign.com/feed.xml',
@@ -115,7 +107,7 @@ def fetch_and_cache_feeds():
     ]
 
     feed_items = []
-    cutoff_time = datetime.now(timezone.utc) - timedelta(hours=72)  # Define o limite de 72 horas
+    cutoff_time = datetime.now(timezone.utc) - timedelta(hours=168)  # Define o limite de 168 horas
 
     for feed_url in feed_urls:
         response = requests.get(feed_url)
@@ -165,8 +157,11 @@ def fetch_and_cache_feeds():
 
     db.session.commit()
     feed_items.sort(key=lambda x: x.pub_date, reverse=True)
-    cache.set('feeds', [item.to_dict() for item in feed_items], timeout=3600)
-    return [item.to_dict() for item in feed_items]
+    total_items = len(feed_items)
+    paginated_feed_items = feed_items[offset:offset + per_page]
+    cache.set('total_items', total_items, timeout=3600)
+    cache.set(f'feeds_{page}_{per_page}', [item.to_dict() for item in paginated_feed_items], timeout=3600)
+    return [item.to_dict() for item in paginated_feed_items]
 
 @app.route('/image-proxy')
 def image_proxy():
@@ -175,25 +170,12 @@ def image_proxy():
         return "URL is required", 400
 
     try:
-        # Extrai o nome do arquivo da URL
-        filename = os.path.basename(image_url)
-        local_image_path = os.path.join('static/uploads', filename)
-
-        # Verifica se a imagem está no diretório local
-        if os.path.exists(local_image_path):
-            return send_from_directory('static/uploads', filename)
-
-        # Se não estiver, busca a imagem remotamente e salva localmente
         response = requests.get(image_url)
         if response.status_code != 200:
             return f"Failed to fetch image from {image_url}", response.status_code
 
-        # Salva a imagem localmente
-        with open(local_image_path, 'wb') as f:
-            f.write(response.content)
-
-        # Serve a imagem salva localmente
-        return send_file(local_image_path, mimetype=response.headers['Content-Type'])
+        img = BytesIO(response.content)
+        return send_file(img, mimetype=response.headers['Content-Type'])
     except Exception as e:
         return str(e), 500
 

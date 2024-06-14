@@ -48,46 +48,22 @@ async function fetchAndCacheImage(url) {
     if (cachedImage) {
         return cachedImage;
     } else {
-        const imageFilename = url.split('/').pop();
-        const localUrl = `/static/uploads/${imageFilename}`;
-
-        try {
-            const response = await fetch(localUrl);
-            if (!response.ok) throw new Error('Network response was not ok');
-            const blob = await response.blob();
-            const reader = new FileReader();
-            return new Promise((resolve, reject) => {
-                reader.onloadend = async () => {
-                    const base64data = reader.result;
-                    try {
-                        await saveImageToCache(localUrl, base64data);
-                    } catch (e) {
-                        console.warn("Failed to save image to IndexedDB", e);
-                    }
-                    resolve(base64data);
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-        } catch (error) {
-            console.error('Fetching image from local storage failed, falling back to original URL:', error);
-            const response = await fetch(`/image-proxy?url=${encodeURIComponent(url)}`);
-            const blob = await response.blob();
-            const reader = new FileReader();
-            return new Promise((resolve, reject) => {
-                reader.onloadend = async () => {
-                    const base64data = reader.result;
-                    try {
-                        await saveImageToCache(url, base64data);
-                    } catch (e) {
-                        console.warn("Failed to save image to IndexedDB", e);
-                    }
-                    resolve(base64data);
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-        }
+        const response = await fetch(`/image-proxy?url=${encodeURIComponent(url)}`);
+        const blob = await response.blob();
+        const reader = new FileReader();
+        return new Promise((resolve, reject) => {
+            reader.onloadend = async () => {
+                const base64data = reader.result;
+                try {
+                    await saveImageToCache(url, base64data);
+                } catch (e) {
+                    console.warn("Failed to save image to IndexedDB", e);
+                }
+                resolve(base64data);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
     }
 }
 
@@ -98,6 +74,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const isListView = urlParams.get('view') === 'list';
 
     let feedData = [];
+    let currentPage = 1;
+    const itemsPerPage = 30;
     let currentFilter = 'all';
 
     if (isListView) {
@@ -109,53 +87,53 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch('/feed')
         .then(response => response.json())
         .then(data => {
+            console.log("Raw feed data:", data);
+            if (!Array.isArray(data)) {
+                throw new Error("Expected array, got non-array.");
+            }
             console.log("Feed data received:", data);
             feedData = data;
-            renderFilters(data);
-            renderFeedItems(data);
+            renderFilters(feedData);
+            renderPagination(feedData);
+            renderFeedItems(feedData, currentPage);
         })
         .catch(error => console.error('Error fetching the feed:', error));
 
-// Dicionário de mapeamento de nomes de feeds para textos personalizados
-const feedNameMapping = {
-    'GameVicio - Últimas Notícias': 'GameVicio',
-    'IGN Brasil': 'IGN',
-    'Novidades do TecMundo': 'TecMundo',
-    'Canaltech': 'Canaltech',
-    'techtudo': 'TechTudo',
-    'Legião dos Heróis': 'Legião dos Heróis',
-    'Jovem Nerd': 'Jovem Nerd'
-};
+    // Renderiza os filtros
+    function renderFilters(data) {
+        const filtersContainer = document.getElementById('filters');
+        const allFeeds = Array.from(new Set(data.map(item => item.channel_title)));
+        filtersContainer.innerHTML = '';
 
-function renderFilters(data) {
-    const filtersContainer = document.getElementById('filters');
-    const allFeeds = Array.from(new Set(data.map(item => item.channel_title)));
-    filtersContainer.innerHTML = '';
-
-    const allButton = document.createElement('button');
-    allButton.className = 'filter-btn';
-    allButton.textContent = 'Tudo';
-    allButton.addEventListener('click', () => {
-        currentFilter = 'all';
-        updateActiveFilter(allButton);
-        renderFeedItems(feedData);
-    });
-    filtersContainer.appendChild(allButton);
-
-    allFeeds.forEach(feed => {
-        const filterButton = document.createElement('button');
-        filterButton.className = 'filter-btn';
-        filterButton.textContent = feedNameMapping[feed] || feed;
-        filterButton.addEventListener('click', () => {
-            currentFilter = feed;
-            updateActiveFilter(filterButton);
-            renderFeedItems(feedData.filter(item => item.channel_title === feed));
+        const allButton = document.createElement('button');
+        allButton.className = 'filter-btn';
+        allButton.textContent = 'Tudo';
+        allButton.addEventListener('click', () => {
+            currentFilter = 'all';
+            currentPage = 1;
+            updateActiveFilter(allButton);
+            renderPagination(feedData);
+            renderFeedItems(feedData, currentPage);
         });
-        filtersContainer.appendChild(filterButton);
-    });
+        filtersContainer.appendChild(allButton);
 
-    updateActiveFilter(allButton);
-}
+        allFeeds.forEach(feed => {
+            const filterButton = document.createElement('button');
+            filterButton.className = 'filter-btn';
+            filterButton.textContent = feed;
+            filterButton.addEventListener('click', () => {
+                currentFilter = feed;
+                currentPage = 1;
+                updateActiveFilter(filterButton);
+                const filteredData = feedData.filter(item => item.channel_title === feed);
+                renderPagination(filteredData);
+                renderFeedItems(filteredData, currentPage);
+            });
+            filtersContainer.appendChild(filterButton);
+        });
+
+        updateActiveFilter(allButton);
+    }
 
     // Atualiza o filtro ativo
     function updateActiveFilter(activeButton) {
@@ -164,12 +142,77 @@ function renderFilters(data) {
         activeButton.classList.add('active');
     }
 
+    // Renderiza a paginação
+    function renderPagination(data) {
+        const totalPages = Math.ceil(data.length / itemsPerPage);
+        const paginationContainer = document.getElementById('pagination');
+        paginationContainer.innerHTML = '';
+
+        if (totalPages > 1) {
+            const prevButton = document.createElement('button');
+            prevButton.className = 'page-btn arrow';
+            prevButton.innerHTML = '&#9664;'; // Seta para a esquerda
+            prevButton.disabled = currentPage === 1;
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderFeedItems(data, currentPage);
+                    renderPagination(data);
+                    scrollToTop(); // Adiciona rolagem ao topo
+                }
+            });
+            paginationContainer.appendChild(prevButton);
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.className = 'page-btn';
+                pageButton.textContent = i;
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                }
+                pageButton.addEventListener('click', () => {
+                    currentPage = i;
+                    renderFeedItems(data, currentPage);
+                    renderPagination(data);
+                    scrollToTop(); // Adiciona rolagem ao topo
+                });
+                paginationContainer.appendChild(pageButton);
+            }
+
+            const nextButton = document.createElement('button');
+            nextButton.className = 'page-btn arrow';
+            nextButton.innerHTML = '&#9654;'; // Seta para a direita
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderFeedItems(data, currentPage);
+                    renderPagination(data);
+                    scrollToTop(); // Adiciona rolagem ao topo
+                }
+            });
+            paginationContainer.appendChild(nextButton);
+        }
+    }
+
+    // Função para rolar a página ao topo
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+
     // Renderiza os itens do feed
-    function renderFeedItems(data) {
+    function renderFeedItems(data, page) {
         const feedContainer = document.getElementById('feed');
         feedContainer.innerHTML = '';
 
-        data.forEach(async (item) => {
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, data.length);
+        const pageData = data.slice(startIndex, endIndex);
+
+        pageData.forEach(async (item) => {
             const feedItem = document.createElement('a');
             feedItem.classList.add('feed-item');
             feedItem.href = item.link;
@@ -182,25 +225,15 @@ function renderFilters(data) {
                 const imgElement = document.createElement('img');
                 imgElement.crossOrigin = 'anonymous';
 
-                const cachedImage = await fetchAndCacheImage(item.image_url);
-                imgElement.src = cachedImage;
+                const localImageUrl = `/static/uploads/${getFilenameFromUrl(item.image_url)}`;
+                imgElement.src = localImageUrl;
+
+                imgElement.onerror = async () => {
+                    const cachedImage = await fetchAndCacheImage(item.image_url);
+                    imgElement.src = cachedImage;
+                };
 
                 feedItem.appendChild(imgElement);
-            }
-
-            // Corrige a manipulação das categorias
-            const categories = item.categories ? item.categories.split(',') : [];
-            if (categories.length > 0) {
-                const categoriesContainer = document.createElement('div');
-                categoriesContainer.className = 'categories';
-                categories.forEach((category, index) => {
-                    const categoryTag = document.createElement('div');
-                    categoryTag.className = 'category-tag';
-                    categoryTag.textContent = category;
-                    categoryTag.style.backgroundColor = getCategoryColor(index);  // Atribui cor diferente
-                    categoriesContainer.appendChild(categoryTag);
-                });
-                content.appendChild(categoriesContainer);
             }
 
             const titleElement = document.createElement('h2');
@@ -271,6 +304,10 @@ function renderFilters(data) {
 
             feedContainer.appendChild(feedItem);
         });
+    }
+
+    function getFilenameFromUrl(url) {
+        return url.substring(url.lastIndexOf('/') + 1);
     }
 
     // Alterna entre modos de visualização

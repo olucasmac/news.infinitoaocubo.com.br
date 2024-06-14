@@ -27,6 +27,8 @@ services:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=feeds_db
+    ports:
+      - "5432:5432"
 
   redis:
     image: redis:7.2.5
