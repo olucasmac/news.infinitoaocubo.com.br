@@ -101,13 +101,13 @@ def fetch_and_cache_feeds(page=1, per_page=30, offset=0):
         'https://rss.tecmundo.com.br/feed',
         'https://canaltech.com.br/rss/',
         'https://pox.globo.com/rss/techtudo/',
-        'https://www.legiaodosherois.com.br/rss',
-        'https://feeds.jovemnerd.com.br/rss/feed',
+        # 'https://www.legiaodosherois.com.br/rss',
+        # 'https://feeds.jovemnerd.com.br/rss/feed',
         BASE_URL + 'personal_feed/meu_feed.xml'  # Usando a URL base do aplicativo
     ]
 
     feed_items = []
-    cutoff_time = datetime.now(timezone.utc) - timedelta(hours=168)  # Define o limite de 168 horas
+    cutoff_time = datetime.now(timezone.utc) - timedelta(hours=48)  # Define o limite de 48 horas
 
     for feed_url in feed_urls:
         response = requests.get(feed_url)

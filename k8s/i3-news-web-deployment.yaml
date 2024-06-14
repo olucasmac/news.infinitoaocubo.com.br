@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: web
-        image: gcr.io/min-b302a/i3-news-v2:1718201278
+        image: gcr.io/min-b302a/i3-news-v2:latest
         ports:
         - containerPort: 5000
         env:
@@ -31,7 +31,7 @@ spec:
         - name: DATABASE_URL
           value: postgresql://user:password@i3-news-postgres:5432/feeds_db
         - name: BASE_URL
-          value: https://news-v2.infinitoaocubo.com.br/
+          value: https://news.infinitoaocubo.com.br/
 ---
 apiVersion: v1
 kind: Service
