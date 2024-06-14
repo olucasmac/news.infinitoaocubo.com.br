@@ -48,22 +48,46 @@ async function fetchAndCacheImage(url) {
     if (cachedImage) {
         return cachedImage;
     } else {
-        const response = await fetch(`/image-proxy?url=${encodeURIComponent(url)}`);
-        const blob = await response.blob();
-        const reader = new FileReader();
-        return new Promise((resolve, reject) => {
-            reader.onloadend = async () => {
-                const base64data = reader.result;
-                try {
-                    await saveImageToCache(url, base64data);
-                } catch (e) {
-                    console.warn("Failed to save image to IndexedDB", e);
-                }
-                resolve(base64data);
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
+        const imageFilename = url.split('/').pop();
+        const localUrl = `/static/uploads/${imageFilename}`;
+
+        try {
+            const response = await fetch(localUrl);
+            if (!response.ok) throw new Error('Network response was not ok');
+            const blob = await response.blob();
+            const reader = new FileReader();
+            return new Promise((resolve, reject) => {
+                reader.onloadend = async () => {
+                    const base64data = reader.result;
+                    try {
+                        await saveImageToCache(localUrl, base64data);
+                    } catch (e) {
+                        console.warn("Failed to save image to IndexedDB", e);
+                    }
+                    resolve(base64data);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        } catch (error) {
+            console.error('Fetching image from local storage failed, falling back to original URL:', error);
+            const response = await fetch(`/image-proxy?url=${encodeURIComponent(url)}`);
+            const blob = await response.blob();
+            const reader = new FileReader();
+            return new Promise((resolve, reject) => {
+                reader.onloadend = async () => {
+                    const base64data = reader.result;
+                    try {
+                        await saveImageToCache(url, base64data);
+                    } catch (e) {
+                        console.warn("Failed to save image to IndexedDB", e);
+                    }
+                    resolve(base64data);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
     }
 }
 

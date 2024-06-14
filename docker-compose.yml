@@ -15,6 +15,8 @@ services:
     depends_on:
       - db
       - redis
+    volumes:
+      - ./static/uploads:/app/static/uploads  # Mapeia o diretório de uploads
 
   db:
     image: postgres:13
