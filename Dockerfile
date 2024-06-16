@@ -10,11 +10,11 @@ COPY requirements.txt requirements.txt
 # Instala as dependências
 RUN apt-get update && apt-get install -y gcc libpq-dev && pip install -r requirements.txt
 
-# Cria o diretório para uploads de imagens
-RUN mkdir -p static/uploads
-
 # Copia o código da aplicação para o contêiner
 COPY . .
+
+# Cria o diretório de uploads
+RUN mkdir -p static/uploads
 
 # Defina a variável de ambiente FLASK_APP
 ENV FLASK_APP=main.py

@@ -49,6 +49,9 @@ async function fetchAndCacheImage(url) {
         return cachedImage;
     } else {
         const response = await fetch(`/image-proxy?url=${encodeURIComponent(url)}`);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
         const blob = await response.blob();
         const reader = new FileReader();
         return new Promise((resolve, reject) => {
@@ -158,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     currentPage--;
                     renderFeedItems(data, currentPage);
                     renderPagination(data);
-                    scrollToTop(); // Adiciona rolagem ao topo
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             });
             paginationContainer.appendChild(prevButton);
@@ -174,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     currentPage = i;
                     renderFeedItems(data, currentPage);
                     renderPagination(data);
-                    scrollToTop(); // Adiciona rolagem ao topo
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
                 paginationContainer.appendChild(pageButton);
             }
@@ -188,19 +191,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     currentPage++;
                     renderFeedItems(data, currentPage);
                     renderPagination(data);
-                    scrollToTop(); // Adiciona rolagem ao topo
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             });
             paginationContainer.appendChild(nextButton);
         }
-    }
-
-    // Função para rolar a página ao topo
-    function scrollToTop() {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
     }
 
     // Renderiza os itens do feed
