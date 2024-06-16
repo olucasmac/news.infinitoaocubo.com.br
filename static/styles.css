@@ -202,7 +202,7 @@ body {
     .toggle-view-btn {
         display: none !important; /* Oculta o botão de alternância de visualização em dispositivos móveis */
     }
-    
+
     .back-to-top-btn {
         display: none; /* Oculta o botão de retornar ao topo em dispositivos móveis */
     }
@@ -357,4 +357,3 @@ body {
     border-radius: 50px;
     cursor: pointer;
     /* font-size: 14px;*/
-}

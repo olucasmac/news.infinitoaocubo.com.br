@@ -16,6 +16,17 @@ app = Flask(__name__)
 # Definir URL da imagem genérica
 GENERIC_IMAGE_URL = 'https://news.infinitoaocubo.com.br/static/imgs/no-image.png'  # Substitua pelo URL da sua imagem genérica
 
+# Dicionário de mapeamento de nomes de feeds para textos personalizados
+FEED_NAME_MAPPING = {
+    'GameVicio - Últimas Notícias': 'GameVicio',
+    'IGN Brasil': 'IGN',
+    'Novidades do TecMundo': 'TecMundo',
+    'Canaltech': 'Canaltech',
+    'techtudo': 'TechTudo',
+    'Legião dos Heróis': 'Legião dos Heróis',
+    'Jovem Nerd': 'Jovem Nerd'
+}
+
 # Configuração do cache
 app.config['CACHE_TYPE'] = 'redis'
 app.config['CACHE_REDIS_HOST'] = os.environ.get('REDIS_HOST', 'localhost')
@@ -70,13 +81,13 @@ def parse_pub_date(pub_date):
         '%d %b %Y %H:%M:%S %z',       # Sem dia da semana
         '%d/%m/%Y %H:%M:%S'           # Formato brasileiro comum
     ]
-    
+
     for fmt in formats:
         try:
             return datetime.strptime(pub_date, fmt)
         except ValueError:
             continue
-    
+
     # Retornar uma data padrão em caso de falha
     return datetime(1970, 1, 1, tzinfo=timezone.utc)
 
@@ -89,12 +100,9 @@ def feed():
     feeds = cache.get('feeds')
     if not feeds:
         feeds = fetch_and_cache_feeds()
-    if isinstance(feeds, list):
-        return jsonify(feeds)
-    else:
-        return jsonify([]), 500
+    return jsonify(feeds)
 
-def fetch_and_cache_feeds(page=1, per_page=30, offset=0):
+def fetch_and_cache_feeds():
     feed_urls = [
         'https://www.gamevicio.com/rss/noticias.xml',
         'https://br.ign.com/feed.xml',
@@ -107,7 +115,7 @@ def fetch_and_cache_feeds(page=1, per_page=30, offset=0):
     ]
 
     feed_items = []
-    cutoff_time = datetime.now(timezone.utc) - timedelta(hours=48)  # Define o limite de 48 horas
+    cutoff_time = datetime.now(timezone.utc) - timedelta(hours=72)  # Define o limite de 72 horas
 
     for feed_url in feed_urls:
         response = requests.get(feed_url)
@@ -157,11 +165,8 @@ def fetch_and_cache_feeds(page=1, per_page=30, offset=0):
 
     db.session.commit()
     feed_items.sort(key=lambda x: x.pub_date, reverse=True)
-    total_items = len(feed_items)
-    paginated_feed_items = feed_items[offset:offset + per_page]
-    cache.set('total_items', total_items, timeout=3600)
-    cache.set(f'feeds_{page}_{per_page}', [item.to_dict() for item in paginated_feed_items], timeout=3600)
-    return [item.to_dict() for item in paginated_feed_items]
+    cache.set('feeds', [item.to_dict() for item in feed_items], timeout=3600)
+    return [item.to_dict() for item in feed_items]
 
 @app.route('/image-proxy')
 def image_proxy():
@@ -169,12 +174,21 @@ def image_proxy():
     if not image_url:
         return "URL is required", 400
 
+    if image_url.startswith('static/uploads/'):
+        return send_from_directory('static/uploads', image_url.replace('static/uploads/', ''))
+
     try:
         response = requests.get(image_url)
         if response.status_code != 200:
             return f"Failed to fetch image from {image_url}", response.status_code
 
         img = BytesIO(response.content)
+        filename = os.path.basename(image_url)
+        filepath = os.path.join('static/uploads', filename)
+
+        with open(filepath, 'wb') as f:
+            f.write(response.content)
+
         return send_file(img, mimetype=response.headers['Content-Type'])
     except Exception as e:
         return str(e), 500
