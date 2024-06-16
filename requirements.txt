@@ -1,8 +1,7 @@
-Flask
-flask-caching
-redis
-apscheduler
-requests
-flask_sqlalchemy
-psycopg2-binary
-flask-migrate
+Flask==2.0.2
+Flask-Caching==1.10.1
+Flask-Migrate==3.1.0
+Flask-SQLAlchemy==2.5.1
+requests==2.26.0
+apscheduler==3.7.0
+psycopg2-binary==2.9.1
