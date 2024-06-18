@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="shortcut icon" href="https://infinitoaocubo.com.br/img/i3_logo.png"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ item.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <a style="text-decoration: none;" href="{{ url_for('index') }}">
+        <div class="header">
+            <img style="margin-right: 10px;" height="40px" src="https://infinitoaocubo.com.br/img/infinito3.png" alt="Infinito ao Cubo">
+            <h1>News</h1>
+        </div>
+    </a>
+    <div class="slogan"><small>Apenas um agregador de notícias sobre Ciência, Tecnologia e Cultura Pop.</small></div>
+    <div id="feed" class="feed" style="column-count: 1;">
+        <a class="feed-item" href="{{ item.link }}" target="_blank">
+            <img src="{{ url_for('static', filename='uploads/' + item.image_url) }}" alt="{{ item.title }}">
+            <div class="content">
+                <h2>{{ item.title }}</h2>
+                <p class="channel-title">por <b>{{ item.channel_title }}</b></p>
+                <p class="pubdate">{{ item.pub_date.strftime('%d/%m/%Y %H:%M') }}</p>
+                {% if item.is_personal_feed %}
+                <div class="ad-tag">AD</div>
+                {% endif %}
+            </div>
+            <div class="footer">
+                <div class="brand">
+                    <img src="https://infinitoaocubo.com.br/img/infinito3.png" alt="Infinito ao Cubo">
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="site-footer">
+        <p>Infinito³ News é apenas um agregador de notícias sobre Ciência, Tecnologia e Cultura Pop.</p>
+        <img src="https://infinitoaocubo.com.br/img/infinito3.png" alt="Infinito ao Cubo">
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</body>
+</html>
