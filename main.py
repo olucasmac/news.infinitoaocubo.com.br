@@ -16,17 +16,6 @@ app = Flask(__name__)
 # Definir URL da imagem genérica
 GENERIC_IMAGE_URL = 'https://news.infinitoaocubo.com.br/static/imgs/no-image.png'  # Substitua pelo URL da sua imagem genérica
 
-# Dicionário de mapeamento de nomes de feeds para textos personalizados
-FEED_NAME_MAPPING = {
-    'GameVicio - Últimas Notícias': 'GameVicio',
-    'IGN Brasil': 'IGN',
-    'Novidades do TecMundo': 'TecMundo',
-    'Canaltech': 'Canaltech',
-    'techtudo': 'TechTudo',
-    'Legião dos Heróis': 'Legião dos Heróis',
-    'Jovem Nerd': 'Jovem Nerd'
-}
-
 # Configuração do cache
 app.config['CACHE_TYPE'] = 'redis'
 app.config['CACHE_REDIS_HOST'] = os.environ.get('REDIS_HOST', 'localhost')
@@ -45,7 +34,7 @@ migrate = Migrate(app, db)
 BASE_URL = os.environ.get('BASE_URL', 'http://localhost:5000/')
 
 class FeedItem(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String, nullable=False)
     link = db.Column(db.String, nullable=False)
     pub_date = db.Column(db.DateTime, nullable=False)
@@ -58,11 +47,13 @@ class FeedItem(db.Model):
         return f'<FeedItem {self.title}>'
 
     def to_dict(self):
+        local_timezone = timezone(timedelta(hours=-3))  # Ajuste o deslocamento conforme necessário
+        local_pub_date = self.pub_date.astimezone(local_timezone)
         return {
             'id': self.id,
             'title': self.title,
             'link': self.link,
-            'pub_date': self.pub_date.isoformat(),
+            'pub_date': local_pub_date.isoformat(),
             'image_url': self.image_url,
             'channel_title': self.channel_title,
             'is_personal_feed': self.is_personal_feed,
@@ -75,20 +66,20 @@ def extract_image_from_description(description):
 
 def parse_pub_date(pub_date):
     formats = [
-        '%a, %d %b %Y %H:%M:%S %z',  # Formato comum usado em RSS
-        '%Y-%m-%dT%H:%M:%S%z',        # Formato ISO 8601
-        '%a, %d %b %Y %H:%M:%S %Z',   # Sem fuso horário
-        '%d %b %Y %H:%M:%S %z',       # Sem dia da semana
-        '%d/%m/%Y %H:%M:%S'           # Formato brasileiro comum
+        '%a, %d %b %Y %H:%M:%S %z',
+        '%Y-%m-%dT%H:%M:%S%z',
+        '%a, %d %b %Y %H:%M:%S %Z',
+        '%d %b %Y %H:%M:%S %z',
+        '%d/%m/%Y %H:%M:%S'
     ]
-
+    
     for fmt in formats:
         try:
-            return datetime.strptime(pub_date, fmt)
+            dt = datetime.strptime(pub_date, fmt)
+            return dt.astimezone(timezone.utc)
         except ValueError:
             continue
-
-    # Retornar uma data padrão em caso de falha
+    
     return datetime(1970, 1, 1, tzinfo=timezone.utc)
 
 @app.route('/')
@@ -109,13 +100,13 @@ def fetch_and_cache_feeds():
         'https://rss.tecmundo.com.br/feed',
         'https://canaltech.com.br/rss/',
         'https://pox.globo.com/rss/techtudo/',
-        # 'https://www.legiaodosherois.com.br/rss',
-        # 'https://feeds.jovemnerd.com.br/rss/feed',
-        BASE_URL + 'personal_feed/meu_feed.xml'  # Usando a URL base do aplicativo
+        'https://www.legiaodosherois.com.br/rss',
+        'https://feeds.jovemnerd.com.br/rss/feed',
+        BASE_URL + 'personal_feed/meu_feed.xml'
     ]
 
     feed_items = []
-    cutoff_time = datetime.now(timezone.utc) - timedelta(hours=72)  # Define o limite de 72 horas
+    cutoff_time = datetime.now(timezone.utc) - timedelta(hours=72)
 
     for feed_url in feed_urls:
         response = requests.get(feed_url)
@@ -137,7 +128,7 @@ def fetch_and_cache_feeds():
             pub_date = parse_pub_date(pub_date_str)
 
             if pub_date < cutoff_time:
-                continue  # Ignora itens que são mais antigos do que 72 horas
+                continue
 
             enclosure = item.find('enclosure')
             image_url = enclosure.attrib['url'] if enclosure is not None else ''
@@ -146,21 +137,36 @@ def fetch_and_cache_feeds():
                 description = item.find('description').text
                 image_url = extract_image_from_description(description)
                 if not image_url:
-                    image_url = GENERIC_IMAGE_URL  # Usa a imagem genérica se nenhuma outra imagem for encontrada
+                    image_url = GENERIC_IMAGE_URL
+
+            image_filename = image_url.split('/')[-1]
+            local_image_path = os.path.join('static', 'uploads', image_filename)
+            if not os.path.exists(local_image_path):
+                try:
+                    img_data = requests.get(image_url).content
+                    with open(local_image_path, 'wb') as handler:
+                        handler.write(img_data)
+                except Exception as e:
+                    print(f"Failed to save image {image_url}: {e}")
 
             categories_text = ','.join([category.text for category in categories])
 
-            feed_item = FeedItem(
-                title=title,
-                link=link,
-                pub_date=pub_date,
-                image_url=image_url,
-                channel_title=channel_title,
-                is_personal_feed=is_personal_feed,
-                categories=categories_text
-            )
+            # Verifica se já existe um item com o mesmo título e link no banco de dados
+            existing_item = FeedItem.query.filter_by(title=title, link=link).first()
+            if existing_item:
+                feed_item = existing_item
+            else:
+                feed_item = FeedItem(
+                    title=title,
+                    link=link,
+                    pub_date=pub_date,
+                    image_url=image_filename,
+                    channel_title=channel_title,
+                    is_personal_feed=is_personal_feed,
+                    categories=categories_text
+                )
 
-            db.session.merge(feed_item)
+            db.session.add(feed_item)
             feed_items.append(feed_item)
 
     db.session.commit()
@@ -174,21 +180,12 @@ def image_proxy():
     if not image_url:
         return "URL is required", 400
 
-    if image_url.startswith('static/uploads/'):
-        return send_from_directory('static/uploads', image_url.replace('static/uploads/', ''))
-
     try:
         response = requests.get(image_url)
         if response.status_code != 200:
             return f"Failed to fetch image from {image_url}", response.status_code
 
         img = BytesIO(response.content)
-        filename = os.path.basename(image_url)
-        filepath = os.path.join('static/uploads', filename)
-
-        with open(filepath, 'wb') as f:
-            f.write(response.content)
-
         return send_file(img, mimetype=response.headers['Content-Type'])
     except Exception as e:
         return str(e), 500
@@ -197,7 +194,11 @@ def image_proxy():
 def serve_feed():
     return send_from_directory('personal_feed', 'meu_feed.xml')
 
-# Configuração do APScheduler
+@app.route('/card/<int:item_id>')
+def card(item_id):
+    feed_item = FeedItem.query.get_or_404(item_id)
+    return render_template('card.html', item=feed_item)
+
 scheduler = BackgroundScheduler()
 
 def scheduled_task():
@@ -207,13 +208,11 @@ def scheduled_task():
 scheduler.add_job(func=scheduled_task, trigger="interval", minutes=10)
 scheduler.start()
 
-# Para evitar problemas com o agendador ao encerrar o aplicativo
 atexit.register(lambda: scheduler.shutdown())
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
 
-# Para uso com functions-framework
 def main(request):
     with app.request_context(request.environ):
         response = app.full_dispatch_request()

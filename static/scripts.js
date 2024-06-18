@@ -44,29 +44,51 @@ function getImageFromCache(url) {
 
 // Busca imagem e a salva no cache
 async function fetchAndCacheImage(url) {
-    const cachedImage = await getImageFromCache(url);
+    const localImageUrl = `/static/uploads/${getFilenameFromUrl(url)}`;
+    const cachedImage = await getImageFromCache(localImageUrl);
     if (cachedImage) {
         return cachedImage;
     } else {
-        const response = await fetch(`/image-proxy?url=${encodeURIComponent(url)}`);
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
+        try {
+            const response = await fetch(localImageUrl);
+            if (response.ok) {
+                const blob = await response.blob();
+                const reader = new FileReader();
+                return new Promise((resolve, reject) => {
+                    reader.onloadend = async () => {
+                        const base64data = reader.result;
+                        try {
+                            await saveImageToCache(localImageUrl, base64data);
+                        } catch (e) {
+                            console.warn("Failed to save image to IndexedDB", e);
+                        }
+                        resolve(base64data);
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        } catch (error) {
+            console.error("Fetching image from local storage failed, falling back to original URL:", error);
+            const response = await fetch(`/image-proxy?url=${encodeURIComponent(url)}`);
+            const blob = await response.blob();
+            const reader = new FileReader();
+            return new Promise((resolve, reject) => {
+                reader.onloadend = async () => {
+                    const base64data = reader.result;
+                    try {
+                        await saveImageToCache(localImageUrl, base64data);
+                    } catch (e) {
+                        console.warn("Failed to save image to IndexedDB", e);
+                    }
+                    resolve(base64data);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
         }
-        const blob = await response.blob();
-        const reader = new FileReader();
-        return new Promise((resolve, reject) => {
-            reader.onloadend = async () => {
-                const base64data = reader.result;
-                try {
-                    await saveImageToCache(url, base64data);
-                } catch (e) {
-                    console.warn("Failed to save image to IndexedDB", e);
-                }
-                resolve(base64data);
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
     }
 }
 
@@ -260,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 footer.classList.add('show');
             }
             footer.innerHTML = 'infinitoaocubo';
-
+            
             const brandContainer = document.createElement('div');
             brandContainer.classList.add('brand');
             const brandImage = document.createElement('img');
@@ -288,7 +310,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     event.preventDefault();
                     event.stopPropagation();
                     showLoading();
-                    copyImageAndURLToClipboard(feedItem, copyBtn, item.link, item.title).finally(hideLoading);
+                    const fullUrl = `${window.location.origin}/card/${item.id}`;
+                    copyImageAndURLToClipboard(feedItem, copyBtn, fullUrl, item.title).finally(hideLoading);
                 });
                 buttonContainer.appendChild(copyBtn);
 

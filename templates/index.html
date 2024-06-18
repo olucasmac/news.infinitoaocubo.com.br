@@ -8,10 +8,12 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <div class="header">
-        <img style="margin-right: 10px;" height="40px" src="https://infinitoaocubo.com.br/img/infinito3.png" alt="Infinito ao Cubo">
-        <h1>News</h1>
-    </div>
+    <a style="text-decoration: none;" href="{{ url_for('index') }}">
+        <div class="header">
+            <img style="margin-right: 10px;" height="40px" src="https://infinitoaocubo.com.br/img/infinito3.png" alt="Infinito ao Cubo">
+            <h1>News</h1>
+        </div>
+    </a>
     <div class="slogan"><small>Apenas um agregador de notícias sobre Ciência, Tecnologia e Cultura Pop.</small></div>
     <div id="filters" class="filters"></div>
     <div id="feed" class="feed"></div>
