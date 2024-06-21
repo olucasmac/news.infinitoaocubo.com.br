@@ -36,7 +36,27 @@
     <div class="site-footer">
         <p>Infinito³ News é apenas um agregador de notícias sobre Ciência, Tecnologia e Cultura Pop.</p>
         <img src="https://infinitoaocubo.com.br/img/infinito3.png" alt="Infinito ao Cubo">
+        <div class="disclaimer" style="font-size: 0.8em; color: #666; margin-top: 20px; text-align: center;">
+            <p>Infinito³ News atua exclusivamente como um agregador de conteúdo focado em ciência, tecnologia e cultura pop. Nosso objetivo é oferecer uma seleção diversificada de artigos provenientes de diversas fontes confiáveis, utilizando feeds RSS disponibilizados por essas próprias fontes. 
+                Nenhum dos artigos apresentados aqui é criado ou editado por nossa equipe. Todo o conteúdo exibido é capturado diretamente dos feeds RSS de terceiros. Dessa forma, todas as informações, opiniões e pontos de vista expressos nos artigos são de responsabilidade exclusiva dos respectivos autores e fontes originais.
+                Nós nos comprometemos a fornecer uma experiência informativa e agradável, mas recomendamos que os usuários verifiquem as informações diretamente nas fontes originais para uma maior precisão e contexto. Agradecemos por utilizar nossa plataforma e esperamos que aproveite o conteúdo oferecido.</p>
+        </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        function decodeHTMLEntities(text) {
+            var txt = document.createElement("textarea");
+            txt.innerHTML = text;
+            return txt.value;
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Decodificar entidades HTML após carregar o conteúdo
+            var elements = document.querySelectorAll(".feed-item .content h2, .feed-item .content p");
+            elements.forEach(function(element) {
+                element.innerHTML = decodeHTMLEntities(element.innerHTML);
+            });
+        });
+    </script>
 </body>
 </html>

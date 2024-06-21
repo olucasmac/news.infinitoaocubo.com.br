@@ -28,6 +28,18 @@ body {
     text-align: center;
 }
 
+/* Contêiner de pesquisa */
+.search-container {
+    margin: 20px;
+    text-align: center;
+}
+
+#searchInput {
+    width: 50%;
+    padding: 10px;
+    font-size: 16px;
+}
+
 /* Contêiner de filtros */
 .filters {
     display: flex;
@@ -220,7 +232,7 @@ body {
 .site-footer img {
     margin-top: 10px;
     height: 40px;
-    margin-bottom: 25px; /* Alterado para adicionar margem inferior */
+    margin-bottom: 10px; /* Alterado para adicionar margem inferior */
 }
 
 /* Overlay de carregamento */
