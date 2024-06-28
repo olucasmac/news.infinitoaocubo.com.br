@@ -139,7 +139,7 @@ function addSearchBar() {
 
 let feedData = [];
 let currentPage = 1;
-const itemsPerPage = 30;
+const itemsPerPage = 50;
 let currentFilter = 'all';
 let showButtons = false; // Definição inicial da variável showButtons
 
@@ -387,7 +387,7 @@ function renderFeedItems(data, page) {
                 event.preventDefault();
                 event.stopPropagation();
                 showLoading();
-                const fullUrl = `${window.location.origin}/card/${item.id}`;
+                const fullUrl = `${window.location.origin}/noticia/${item.id}`;
                 copyImageAndURLToClipboard(feedItem, copyBtn, fullUrl, item.title).finally(hideLoading);
             });
             buttonContainer.appendChild(copyBtn);
@@ -481,7 +481,8 @@ async function downloadCardAsImageAndCopyURL(card, button, url, title) {
         link.href = canvas.toDataURL('image/png');
         link.click();
 
-        await navigator.clipboard.writeText(`${title}: ${url}`);
+        const decodedTitle = decodeHTMLEntities(title);
+        await navigator.clipboard.writeText(`${decodedTitle}: ${url}`);
         alert('Imagem baixada e URL copiada para a área de transferência!');
     } catch (err) {
         console.error('Erro ao baixar imagem e copiar URL: ', err);
@@ -499,10 +500,11 @@ async function copyImageAndURLToClipboard(card, button, url, title) {
         const canvas = await html2canvas(card, { useCORS: true });
 
         const blob = await new Promise(resolve => canvas.toBlob(resolve));
+        const decodedTitle = decodeHTMLEntities(title);
         const clipboardItems = [
             new ClipboardItem({
                 [blob.type]: blob,
-                'text/plain': new Blob([`${title}: ${url}`], { type: 'text/plain' })
+                'text/plain': new Blob([`${decodedTitle}: ${url}`], { type: 'text/plain' })
             })
         ];
 

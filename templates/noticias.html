@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listagem de Notícias</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: white;">Listagem de Notícias</h1>
+        <ul class="news-list">
+            {% for item in feed_items %}
+                <li class="news-item">
+                    <a href="{{ url_for('card', item_id=item.id) }}" target="_blank">{{ item.title }}</a> - <small>{{ item.channel_title }}</small> - <small>{{ item.pub_date }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>

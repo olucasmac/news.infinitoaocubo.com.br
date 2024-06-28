@@ -194,10 +194,15 @@ def image_proxy():
 def serve_feed():
     return send_from_directory('personal_feed', 'meu_feed.xml')
 
-@app.route('/card/<int:item_id>')
+@app.route('/noticia/<int:item_id>')
 def card(item_id):
     feed_item = FeedItem.query.get_or_404(item_id)
     return render_template('card.html', item=feed_item)
+
+@app.route('/noticias')
+def noticias():
+    feed_items = FeedItem.query.order_by(FeedItem.pub_date.desc()).all()
+    return render_template('noticias.html', feed_items=feed_items)
 
 scheduler = BackgroundScheduler()
 

@@ -370,3 +370,37 @@ body {
     cursor: pointer;
     /* font-size: 14px;*/
 }
+
+.disclaimer {
+    max-width: 1000px;
+    width: 90%;
+    margin:auto;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.news-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.news-item {
+    margin-bottom: 10px;
+}
+
+.news-item a {
+    text-decoration: none;
+    color: #dbdbdb;
+}
+
+.news-item a:hover {
+    text-decoration: underline;
+}
+
+.news-item small {
+    color: #999;
+}
